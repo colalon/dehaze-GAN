@@ -11,8 +11,6 @@ import cv2
 
 X_numpy = np.load('../../dehaze/data/nyu_water_rgb_no_noise.npy')
 Y_numpy = np.load('../../dehaze/data/nyu_gt_rgb.npy')
-#X_numpy = np.load('../../uw2_hazy_rgb.npy')
-#Y_numpy = np.load('../../uw2_gt_rgb.npy')
 
 X_numpy_test = X_numpy[0:]
 Y_numpy_test = Y_numpy[0:]

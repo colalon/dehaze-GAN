@@ -25,6 +25,7 @@ def random_crop_filp(im_hazy_in,im_gt_in,switch=False):
 
     return hazy,gt
 
+
 def white_balance(im,alpha):
     eps = 1e-3
     gray = 0.299 * im[:,:,:,0:1] + 0.587 * im[:,:,:,1:2] + 0.114 * im[:,:,:,2:3]
