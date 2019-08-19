@@ -1,11 +1,12 @@
 import tensorflow as tf
 import numpy as np
-from scipy.misc import imsave
+from scipy.misc import imsave,imread
+import cv2
 from function_hazy import preprocess,deprocess,FCN,Unet_aod,Unet_atm
 from crop_image import gradient_lap,random_crop_filp
 
 class GAN_dehaze():
-    def __init__(self, sess, batch_size=4, ngf=16, ndf=16, EPS = 1e-10, gan_weight = 1., l1_weight = 100., lr = 0.0002, beta1 = 0.5, weights_dir = None, dataset_dir_x = None, dataset_dir_y = None, output_dir = None, pretrain = True):
+    def __init__(self, sess, batch_size=4, ngf=16, ndf=16, EPS = 1e-10, gan_weight = 1., l1_weight = 100., lr = 0.0002, beta1 = 0.5, weights_dir = None, dataset_dir_x = None, dataset_dir_y = None, output_dir = None, pretrain = True, imlist = None, video_path = None):
         self.sess = sess
         self.batch_size = batch_size
         self.ngf = ngf
@@ -20,6 +21,8 @@ class GAN_dehaze():
         self.dataset_dir_y = dataset_dir_y
         self.output_dir = output_dir
         self.pretrain = pretrain
+        self.imlist = imlist
+        self.video_path = video_path
 
 
         self.build_model()
@@ -154,8 +157,81 @@ class GAN_dehaze():
                 imsave(self.output_dir+'x.jpg',np.uint8(xin[0]*255.0))
                 imsave(self.output_dir+'imcom.jpg',np.uint8(imcom[0]*255.0))
                 print (step)
-                #self.saver.save(self.sess, "./water_16/water_16.ckpt")
-            
+                self.saver.save(self.sess, "./water_16/water_16.ckpt")
+    
+    def test(self):
+        X_numpy = np.load(self.dataset_dir_x)
+        Y_numpy = np.load(self.dataset_dir_y)
+        
+        self.sess.run(tf.global_variables_initializer())
+
+        if self.pretrain == True:
+            self.saver.restore(self.sess, self.weights_dir)
+        
+        for i in range (X_numpy.shape[0]):
+            im = X_numpy[i:i+1]
+            imcom,imjf,imjaod,imt,imaodi,imfi,imk = self.sess.run([self.xcom,self.jf,self.jaod,self.xt,self.jaodi,self.jfi,self.xk], feed_dict={self.X_raw:im, self.istrain:False})
+            target = Y_numpy[i].copy()
+            #out = np.hstack([im[0],imjc[0],target])
+            imsave(self.output_dir+str(i)+"truth.png",target)
+            imsave(self.output_dir+str(i)+"result.png",np.uint8(imcom[0]*255.0))
+            imsave(self.output_dir+str(i)+"trans.png",imt[0,:,:,0]*255.0)
+            imsave(self.output_dir+str(i)+"input.png",np.uint8(im[0]*255.0))
+            imsave(self.output_dir+str(i)+"jf.png",np.uint8(imjf[0]*255.0))
+            imsave(self.output_dir+str(i)+"jaod.png",np.uint8(imjaod[0]*255.0))
+            imsave(self.output_dir+str(i)+"aodi.png",np.uint8(imaodi[0]*255.0))
+            imsave(self.output_dir+str(i)+"fi.png",np.uint8(imfi[0]*255.0))
+            imsave(self.output_dir+str(i)+"imk.png",np.uint8((1/(imk[0]+0.5))*255.0))
+            print (i)
+    
+    def images(self):
+
+        self.sess.run(tf.global_variables_initializer())
+
+        if self.pretrain == True:
+            self.saver.restore(self.sess, self.weights_dir)
+
+        for i,filename in enumerate(self.imlist):
+            im = imread(self.imlist[i])
+            im = cv2.resize(im[:,:,0:3],(256,256))
+            im = np.expand_dims(im,axis=0)
+            imcom, imt = self.sess.run([self.xcom, self.xtt], feed_dict={self.X_raw:im, self.istrain:False})
+            imsave(self.output_dir+"input"+str(i)+".png",np.uint8(im[0]))
+            imsave(self.output_dir+"result"+str(i)+".png",np.uint8(imcom[0]*255.0))
+            imsave(self.output_dir+"trans"+str(i)+".png",np.uint8(imt[0,:,:,0]*255.0))
+            print (i,filename)
+    
+    def video(self):
+
+        self.sess.run(tf.global_variables_initializer())
+
+        if self.pretrain == True:
+            self.saver.restore(self.sess, self.weights_dir)
+
+        cap = cv2.VideoCapture(self.video_path)
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        out = cv2.VideoWriter(self.output_dir+'output.avi', fourcc, fps, (512,256))
+        while 1:
+            ret , frame = cap.read()
+            print (ret)
+            if ret == True:
+                frame = cv2.resize(frame,(256,256))
+                frame_rgb = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                judge = np.expand_dims(frame_rgb,axis=0)
+                #judge = batch_he_cpu(judge)
+                imjc,imt,ima = self.sess.run([self.xcom,self.xt,self.xa], feed_dict={self.X_raw:judge,self.istrain:False})
+                print (ima*255.0)
+                imjc = np.uint8(imjc*255.0)
+                #imjc = batch_he_cpu(imjc)
+                imt = np.uint8(imt*255.0)
+                imjc = cv2.cvtColor(imjc[0],cv2.COLOR_RGB2BGR)
+                imt = cv2.cvtColor(imt[0],cv2.COLOR_RGB2BGR)
+                cv2.imshow('hazy',frame)
+                cv2.imshow('result',imjc)
+                cv2.imshow('imt',imt)
+                out.write(np.hstack((frame,imjc)))
+                cv2.waitKey(1)
 
 
     
