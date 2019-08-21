@@ -1,5 +1,17 @@
-# dehaze-GAN (TODO  Not finish)
+# dehaze-GAN
+
+
+
+
+
+(TODO  Not finish)
 利用GAN來進行除霧
+ *A*
+ **B**
+ ***C***
+
+[abc](https://github.com/phillipi/pix2pix)
+
 ## Setup
 ### Prerequisites
 ```sh
@@ -28,4 +40,10 @@ The following models have not been implemented:
 ```
 
 ## Acknowledgments
-This is a port of [pix2pix](https://github.com/phillipi/pix2pix) 
+This is a port of [pix2pix](https://github.com/phillipi/pix2pix).
+
+[tmp](#dehazed-GAN)
+
+ax^{2} + by^{2} + c = 0
+
+<img src="https://latex.codecogs.com/gif.latex?ax%5E%7B2%7D%20&plus;%20by%5E%7B2%7D%20&plus;%20c%20%3D%200" height="30px"/>
