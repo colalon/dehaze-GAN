@@ -1,24 +1,54 @@
 <h1 id="dehaze-GAN"> dehaze-GAN</h1>
 
-*   [除霧架構](#Architecture)
-*   [生成器](#generator)
-*   [分辨器](#discriminator)
-*   [training epoachs](#training-epoachs)
+*   [演算法說明](#Algo)
+    *   [除霧架構](#Architecture)
+    *   [生成器](#generator)
+    *   [分辨器](#discriminator)
+    *   [training epoachs](#training-epoachs)
+*   [使用方法](#howtouse)
+    *   [訓練](#training)
+    *   [測試](#testing)
+    *   [圖片除霧](#images_test)
+    *   [影片除霧](#video_test)
 
-<h2 id="Architecture"> 除霧架構</h2>
+<h2 id="Algo"> 演算法說明</h2>
+<h3 id="Architecture"> 除霧架構</h3>
 <img src="./doc/Architecture.jpg" width="700px"/>
 
-<h2 id="generator"> 生成器</h2>
+<h3 id="generator"> 生成器</h3>
 
 | Unet1 | Unet2 |
 | --- | --- |
 | <img src="./doc/Unet.jpg" width="500px"/> | <img src="./doc/Unet2.jpg" width="500px"/> |
 
-<h2 id="discriminator"> 分辨器</h2>
+<h3 id="discriminator"> 分辨器</h3>
 <img src="./doc/discriminator.jpg" width="500px"/>
 
-<h2 id="training-epoachs"> training epoachs</h2>
+<h3 id="training-epoachs"> training epoachs</h3>
 <img src="./doc/training epochs.jpg" width="700px"/>
+
+<h2 id="howtouse"> 使用方法</h2>
+
+<h3 id="training"> 訓練</h3>
+
+```sh
+python
+```
+<h3 id="testing"> 測試</h3>
+
+```sh
+python
+```
+<h3 id="images_test"> 圖片除霧</h3>
+
+```sh
+python
+```
+<h3 id="video_test"> 影片除霧</h3>
+
+```sh
+python
+```
 
 (TODO  Not finish)
 利用GAN來進行除霧
