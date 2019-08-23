@@ -1,8 +1,24 @@
-# dehaze-GAN
+<h1 id="dehaze-GAN"> dehaze-GAN</h1>
 
+*   [除霧架構](#Architecture)
+*   [生成器](#generator)
+*   [分辨器](#discriminator)
+*   [training epoachs](#training-epoachs)
 
+<h2 id="Architecture"> 除霧架構</h2>
+<img src="./doc/Architecture.jpg" width="700px"/>
 
+<h2 id="generator"> 生成器</h2>
 
+| Unet1 | Unet2 |
+| --- | --- |
+| <img src="./doc/Unet.jpg" width="500px"/> | <img src="./doc/Unet2.jpg" width="500px"/> |
+
+<h2 id="discriminator"> 分辨器</h2>
+<img src="./doc/discriminator.jpg" width="500px"/>
+
+<h2 id="training-epoachs"> training epoachs</h2>
+<img src="./doc/training epochs.jpg" width="700px"/>
 
 (TODO  Not finish)
 利用GAN來進行除霧
