@@ -10,6 +10,9 @@
     *   [測試](#testing)
     *   [圖片除霧](#images_test)
     *   [影片除霧](#video_test)
+*   [結果展示](#result)
+    *   [圖片除霧結果](#images_result)
+    *   [影片除霧結果](#video_result)
 
 <h2 id="Algo"> 演算法說明</h2>
 <h3 id="Architecture"> 除霧架構</h3>
@@ -32,64 +35,36 @@
 <h3 id="training"> 訓練</h3>
 
 ```sh
-python
+python main.py --phase train --pretrain (True or False) --weights_path ./weights_dir/weights.ckpt --dataset_path_x ./dataset_x.npy --dataset_path_y ./dataset_y.npy  --output_dir ./output/
 ```
 <h3 id="testing"> 測試</h3>
 
 ```sh
-python
+python main.py  --phase test --pretrain True --weights_path ./weights_dir/weights.ckpt --dataset_path_x ./dataset_x.npy --dataset_path_y ./dataset_y.npy  --output_dir ./output/
 ```
 <h3 id="images_test"> 圖片除霧</h3>
 
 ```sh
-python
+python main.py  --phase images --pretrain True --weights_path ./weights_dir/weights.ckpt --imlist ["./sample1.jpg","./sample2.png"] --output_dir ./output/
 ```
 <h3 id="video_test"> 影片除霧</h3>
 
 ```sh
-python
+python main.py  --phase video --pretrain True --weights_path ./weights_dir/weights.ckpt --video_path ./video.avi --output_dir ./output/
 ```
 
-(TODO  Not finish)
-利用GAN來進行除霧
- *A*
- **B**
- ***C***
+<h2 id="result"> 結果展示</h2>
 
-[abc](https://github.com/phillipi/pix2pix)
+<h3 id="images_result"> 圖片除霧結果</h3>
 
-## Setup
-### Prerequisites
-```sh
-# python
-```
+| input | output | input | output |
+| --- | --- | --- | --- |
+|<img src="./doc/land/input1.jpg" width="200px"/>|<img src="./doc/land/output1.jpg" width="200px"/>|<img src="./doc/underwater/input1.jpg" width="200px"/>|<img src="./doc/underwater/output1.jpg" width="200px"/>|
+|<img src="./doc/land/input2.jpg" width="200px"/>|<img src="./doc/land/output2.jpg" width="200px"/>|<img src="./doc/underwater/input2.jpg" width="200px"/>|<img src="./doc/underwater/output2.jpg" width="200px"/>|
+|<img src="./doc/land/input3.jpg" width="200px"/>|<img src="./doc/land/output3.jpg" width="200px"/>|<img src="./doc/underwater/input3.jpg" width="200px"/>|<img src="./doc/underwater/output3.jpg" width="200px"/>|
+|<img src="./doc/land/input4.jpg" width="200px"/>|<img src="./doc/land/output4.jpg" width="200px"/>|<img src="./doc/underwater/input4.jpg" width="200px"/>|<img src="./doc/underwater/output4.jpg" width="200px"/>|
+|<img src="./doc/land/input5.jpg" width="200px"/>|<img src="./doc/land/output5.jpg" width="200px"/>|<img src="./doc/underwater/input5.jpg" width="200px"/>|<img src="./doc/underwater/output5.jpg" width="200px"/>|
+|<img src="./doc/land/input6.jpg" width="200px"/>|<img src="./doc/land/output6.jpg" width="200px"/>|<img src="./doc/underwater/input6.jpg" width="200px"/>|<img src="./doc/underwater/output6.jpg" width="200px"/>|
 
-| dataset | example |
-| --- | --- |
-| aa | bb |
+<h3 id="video_result"> 影片除霧結果</h3>
 
-The following models have not been implemented:
-- defineG_encoder_decoder
-- defineG_unet_128
-- defineD_pixelGAN
-
-<img src="https://images.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500" width="300px"/>
-
-
-```
-@article{pix2pix2016,
-  title={Image-to-Image Translation with Conditional Adversarial Networks},
-  author={Isola, Phillip and Zhu, Jun-Yan and Zhou, Tinghui and Efros, Alexei A},
-  journal={arxiv},
-  year={2016}
-}
-```
-
-## Acknowledgments
-This is a port of [pix2pix](https://github.com/phillipi/pix2pix).
-
-[tmp](#dehazed-GAN)
-
-ax^{2} + by^{2} + c = 0
-
-<img src="https://latex.codecogs.com/gif.latex?ax%5E%7B2%7D%20&plus;%20by%5E%7B2%7D%20&plus;%20c%20%3D%200" height="30px"/>
