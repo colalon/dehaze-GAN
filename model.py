@@ -2,11 +2,11 @@ import tensorflow as tf
 import numpy as np
 from scipy.misc import imsave,imread
 import cv2
-from function_hazy import preprocess,deprocess,FCN,Unet_aod,Unet_atm
-from crop_image import gradient_lap,random_crop_filp
+from ops import preprocess,deprocess,FCN,Unet_aod,Unet_atm
+from utils import gradient_lap,random_crop_filp,white_balance
 
 class GAN_dehaze():
-    def __init__(self, sess, batch_size=4, ngf=16, ndf=16, EPS = 1e-10, gan_weight = 1., l1_weight = 100., lr = 0.0002, beta1 = 0.5, weights_dir = None, dataset_dir_x = None, dataset_dir_y = None, output_dir = None, pretrain = True, imlist = None, video_path = None):
+    def __init__(self, sess, batch_size=4, ngf=16, ndf=16, EPS = 1e-10, gan_weight = 1., l1_weight = 100., lr = 0.0002, beta1 = 0.5, weights_path = None, dataset_path_x = None, dataset_path_y = None, output_dir = None, pretrain = True, im_list = None, video_path = None):
         self.sess = sess
         self.batch_size = batch_size
         self.ngf = ngf
@@ -16,12 +16,12 @@ class GAN_dehaze():
         self.l1_weight = l1_weight
         self.lr = lr
         self.beta1 = beta1
-        self.weights_dir = weights_dir
-        self.dataset_dir_x = dataset_dir_x
-        self.dataset_dir_y = dataset_dir_y
+        self.weights_path = weights_path
+        self.dataset_path_x = dataset_path_x
+        self.dataset_path_y = dataset_path_y
         self.output_dir = output_dir
         self.pretrain = pretrain
-        self.imlist = imlist
+        self.im_list = im_list
         self.video_path = video_path
 
 
@@ -68,6 +68,7 @@ class GAN_dehaze():
             self.jaodi = tf.clip_by_value(self.jaodi,0,1)
             self.jfi = tf.clip_by_value(self.jfi,0,1)
             self.xcom = (self.xtt) * self.jaod + (1.0 - self.xtt) * self.jf
+            self.xcomw = white_balance(self.xcom,0.2)
 
         with tf.name_scope("real_discriminator"):
             with tf.variable_scope("discriminator"):
@@ -126,13 +127,13 @@ class GAN_dehaze():
         self.saver = tf.train.Saver()
 
     def train(self):
-        X_numpy = np.load(self.dataset_dir_x)
-        Y_numpy = np.load(self.dataset_dir_y)
+        X_numpy = np.load(self.dataset_path_x)
+        Y_numpy = np.load(self.dataset_path_y)
         
         self.sess.run(tf.global_variables_initializer())
 
         if self.pretrain == True:
-            self.saver.restore(self.sess, self.weights_dir)
+            self.saver.restore(self.sess, self.weights_path)
         
         for step in range (10000000000):
             batchx = np.random.randint(X_numpy.shape[0],size=self.batch_size)
@@ -160,21 +161,22 @@ class GAN_dehaze():
                 self.saver.save(self.sess, "./water_16/water_16.ckpt")
     
     def test(self):
-        X_numpy = np.load(self.dataset_dir_x)
-        Y_numpy = np.load(self.dataset_dir_y)
+        X_numpy = np.load(self.dataset_path_x)
+        Y_numpy = np.load(self.dataset_path_y)
         
         self.sess.run(tf.global_variables_initializer())
 
         if self.pretrain == True:
-            self.saver.restore(self.sess, self.weights_dir)
+            self.saver.restore(self.sess, self.weights_path)
         
         for i in range (X_numpy.shape[0]):
             im = X_numpy[i:i+1]
-            imcom,imjf,imjaod,imt,imaodi,imfi,imk = self.sess.run([self.xcom,self.jf,self.jaod,self.xt,self.jaodi,self.jfi,self.xk], feed_dict={self.X_raw:im, self.istrain:False})
+            imcom,imcomw,imjf,imjaod,imt,imaodi,imfi,imk = self.sess.run([self.xcom,self.xcomw,self.jf,self.jaod,self.xt,self.jaodi,self.jfi,self.xk], feed_dict={self.X_raw:im, self.istrain:False})
             target = Y_numpy[i].copy()
             #out = np.hstack([im[0],imjc[0],target])
             imsave(self.output_dir+str(i)+"truth.png",target)
             imsave(self.output_dir+str(i)+"result.png",np.uint8(imcom[0]*255.0))
+            imsave(self.output_dir+str(i)+"resultw.png",np.uint8(imcomw[0]*255.0))
             imsave(self.output_dir+str(i)+"trans.png",imt[0,:,:,0]*255.0)
             imsave(self.output_dir+str(i)+"input.png",np.uint8(im[0]*255.0))
             imsave(self.output_dir+str(i)+"jf.png",np.uint8(imjf[0]*255.0))
@@ -189,15 +191,16 @@ class GAN_dehaze():
         self.sess.run(tf.global_variables_initializer())
 
         if self.pretrain == True:
-            self.saver.restore(self.sess, self.weights_dir)
+            self.saver.restore(self.sess, self.weights_path)
 
-        for i,filename in enumerate(self.imlist):
-            im = imread(self.imlist[i])
+        for i,filename in enumerate(self.im_list):
+            im = imread(self.im_list[i])
             im = cv2.resize(im[:,:,0:3],(256,256))
             im = np.expand_dims(im,axis=0)
-            imcom, imt = self.sess.run([self.xcom, self.xtt], feed_dict={self.X_raw:im, self.istrain:False})
+            imcom, imcomw, imt = self.sess.run([self.xcom, self.xcomw, self.xtt], feed_dict={self.X_raw:im, self.istrain:False})
             imsave(self.output_dir+"input"+str(i)+".png",np.uint8(im[0]))
             imsave(self.output_dir+"result"+str(i)+".png",np.uint8(imcom[0]*255.0))
+            imsave(self.output_dir+"resultw"+str(i)+".png",np.uint8(imcomw[0]*255.0))
             imsave(self.output_dir+"trans"+str(i)+".png",np.uint8(imt[0,:,:,0]*255.0))
             print (i,filename)
     
@@ -206,7 +209,8 @@ class GAN_dehaze():
         self.sess.run(tf.global_variables_initializer())
 
         if self.pretrain == True:
-            self.saver.restore(self.sess, self.weights_dir)
+            self.saver.restore(self.sess, self.weights_path)
+            print ("load model")
 
         cap = cv2.VideoCapture(self.video_path)
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -220,7 +224,7 @@ class GAN_dehaze():
                 frame_rgb = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                 judge = np.expand_dims(frame_rgb,axis=0)
                 #judge = batch_he_cpu(judge)
-                imjc,imt,ima = self.sess.run([self.xcom,self.xt,self.xa], feed_dict={self.X_raw:judge,self.istrain:False})
+                imjc,imt,ima = self.sess.run([self.xcomw,self.xt,self.xa], feed_dict={self.X_raw:judge,self.istrain:False})
                 print (ima*255.0)
                 imjc = np.uint8(imjc*255.0)
                 #imjc = batch_he_cpu(imjc)
